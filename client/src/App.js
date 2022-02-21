@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { Text } from '@chakra-ui/react';
 import DiceRoll from './components/DiceRoll';
 import ResultDisplay from './components/ResultDisplay.js';
+import NumberOfRolls from './components/NumberOfRolls';
 
 function App() {
-	const [numRolls, setNumRolls] = useState(3);
+	const [numRolls, setNumRolls] = useState(null);
 	const [result, setResult] = useState(null);
+	const [repeatRolls, setRepeatRolls] = useState(null);
 
 	const data = [
 		{
@@ -80,7 +82,15 @@ function App() {
 			try {
 				const res = await fetch('/api/v1');
 				const data = await res.json();
-				console.log(data);
+				const rolls = data.rolls;
+				if (result) {
+					const reps = rolls.filter(
+						(doc) => doc.word === result.word
+					);
+					setRepeatRolls(reps.length);
+				}
+				setNumRolls(data.numberOfHits);
+
 				return data;
 			} catch (error) {
 				console.log(error);
@@ -88,7 +98,7 @@ function App() {
 		};
 
 		fetchDataOnLoad();
-	}, []);
+	}, [result]);
 
 	const queryDB = async () => {
 		const num = rollDice(data.length);
@@ -122,8 +132,13 @@ function App() {
 			) : (
 				<Text fontSize="4xl">Roll the dice!</Text>
 			)}
+			{repeatRolls && (
+				<Text fontSize="2xl">
+					{result.word} has been rolled {repeatRolls} times
+				</Text>
+			)}
 			<DiceRoll handleDiceRoll={queryDB} />
-			{/* <NumberOfRolls numRolls={numRolls} /> */}
+			<NumberOfRolls numRolls={numRolls} />
 		</div>
 	);
 }
