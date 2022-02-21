@@ -1,89 +1,113 @@
 import './App.css';
-import NumberOfRolls from './components/NumberOfRolls';
 import React, { useState } from 'react';
-import { Button, Text } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
+import DiceRoll from './components/DiceRoll';
+import ResultDisplay from './components/ResultDisplay.js';
 
 function App() {
 	const [numRolls, setNumRolls] = useState(3);
-	const [roll, setRoll] = useState(null);
+	const [result, setResult] = useState(null);
+
 	const data = [
 		{
-			id: 1,
+			id: 0,
 			language: 'Italian',
 			word: 'Salute',
 		},
 		{
-			id: 2,
+			id: 1,
 			language: 'Japanese',
 			word: '乾杯 (Kanpai) ',
 		},
 		{
-			id: 3,
+			id: 2,
 			language: 'Irish',
 			word: 'Sláinte (slawn-cha)',
 		},
 		{
-			id: 4,
+			id: 3,
 			language: 'German',
 			word: 'Prost',
 		},
 		{
-			id: 5,
+			id: 4,
 			language: 'French',
 			word: 'Santé',
 		},
 		{
-			id: 6,
+			id: 5,
 			language: 'Danish',
 			word: 'Skål',
 		},
 		{
-			id: 7,
+			id: 6,
 			language: 'Dutch',
 			word: 'Proost',
 		},
 		{
-			id: 8,
+			id: 7,
 			language: 'English',
 			word: 'Cheers',
 		},
 		{
-			id: 9,
+			id: 8,
 			language: 'Greek',
 			word: 'Στην υγειά σας (Stin Eye-ee-yass-ooh)',
 		},
 		{
-			id: 10,
+			id: 9,
 			language: 'Hawaiin',
 			word: 'Kāmau',
 		},
 		{
-			id: 11,
+			id: 10,
 			language: 'Hebrew',
 			word: "L'chaim",
 		},
 		{
-			id: 12,
+			id: 11,
 			language: 'Mandarin',
 			word: '干杯 (gān bēi)',
 		},
 	];
 
-	console.log(data.length);
-
 	function rollDice(max) {
-		const result = Math.floor(Math.random() * max);
-		console.log(roll);
-		setRoll(result);
+		return Math.floor(Math.random() * max);
 	}
+
+	const queryDB = async () => {
+		const num = rollDice(data.length);
+		const { word } = data.find((item) => item.id === num);
+		await postData('/api/v1', word);
+
+		setResult(result);
+	};
+
+	const postData = async (url = '', payload = {}) => {
+		try {
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ word: payload }),
+			});
+			const data = await res.json();
+			console.log(data);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	return (
 		<div className="App">
-			<NumberOfRolls numRolls={numRolls} />
-			<Button onClick={() => rollDice(data.length)}>
-				Roll the dice!
-			</Button>
-			<Text>Result: {roll}</Text>
+			{result ? (
+				<ResultDisplay result={result} />
+			) : (
+				<Text fontSize="4xl">Roll the dice!</Text>
+			)}
+			<DiceRoll handleDiceRoll={queryDB} />
+			{/* <NumberOfRolls numRolls={numRolls} /> */}
 		</div>
 	);
 }
