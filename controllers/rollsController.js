@@ -11,8 +11,8 @@ const getRolls = async (req, res) => {
 
 const createRoll = async (req, res) => {
 	try {
-		const roll = await Roll.create(req.body);
-		res.status(202).json({ success: true, data: roll });
+		const role = await Roll.create(req.body);
+		res.status(202).json({ success: true, data: role });
 	} catch (error) {
 		res.status(400).json({ error });
 	}

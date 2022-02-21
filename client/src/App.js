@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text } from '@chakra-ui/react';
 import DiceRoll from './components/DiceRoll';
 import ResultDisplay from './components/ResultDisplay.js';
@@ -75,12 +75,28 @@ function App() {
 		return Math.floor(Math.random() * max);
 	}
 
+	useEffect(() => {
+		const fetchDataOnLoad = async () => {
+			try {
+				const res = await fetch('/api/v1');
+				const data = await res.json();
+				console.log(data);
+				return data;
+			} catch (error) {
+				console.log(error);
+			}
+		};
+
+		fetchDataOnLoad();
+	}, []);
+
 	const queryDB = async () => {
 		const num = rollDice(data.length);
-		const { word } = data.find((item) => item.id === num);
-		await postData('/api/v1', word);
-
-		setResult(result);
+		const wordObj = data.find((item) => item.id === num);
+		const result = await postData('/api/v1', wordObj.word);
+		if (result.success) {
+			setResult(wordObj);
+		}
 	};
 
 	const postData = async (url = '', payload = {}) => {
@@ -93,7 +109,7 @@ function App() {
 				body: JSON.stringify({ word: payload }),
 			});
 			const data = await res.json();
-			console.log(data);
+			return data;
 		} catch (error) {
 			console.log(error);
 		}
